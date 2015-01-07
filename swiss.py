@@ -3,64 +3,7 @@ from math import log2, ceil
 from swiss_pairing import random_pairings, score_based_pairings
 from swiss_utils import create_player_list, update_tiebreakers, dropout_players
 from swiss_document import publish_round_pairing, publish_final_standings
-
-def input_pairing_results( pairings ):
-	while not len(pairings) == 0:
-		print( "\n\nPairings: ")
-		for i in range(len(pairings)):
-			a, b = pairings[i]
-			if a.is_bye:
-				print("{b} receives a bye".format(b=b.name))
-				b.update_score(a, 2, 0)
-				del(pairings[i])
-			elif b.is_bye:
-				print("{a} receives a bye".format(a=a.name))
-				a.update_score(b, 2, 0)
-				del(pairings[i])
-			else:
-				print(i+1, "-", a.name, "vs", b.name)
-		
-		print("\nSelect a match to enter a result for.")
-		selection = input()
-		try:
-			val = int(selection)
-			if val <= 0 or val > len(pairings):
-				print("Please enter a number between 1 and", len(pairings))
-				continue
-
-			# Get result
-			a, b = pairings[val-1]
-			result_input = ""
-			while result_input not in ["2-0", "2-1", "1-2", "0-2"]:
-				print("Enter score for {a} vs {b}".format(a=a.name, b=b.name))
-				result_input = input()
-			
-			if result_input == "2-0":
-				a.update_score(b, 2, 0)
-				b.update_score(a, 0, 2)
-				print( a.name, "beat", b.name, "2-0")
-
-			if result_input == "2-1":
-				a.update_score(b, 2, 1)
-				b.update_score(a, 1, 2)
-				print( a.name, "beat", b.name, "2-1")
-
-			if result_input == "0-2":
-				a.update_score(b, 0, 2)
-				b.update_score(a, 2, 0)
-				print( b.name, "beat", a.name, "2-0")
-
-			if result_input == "1-2":
-				a.update_score(b, 1, 2)
-				b.update_score(a, 2, 1)
-				print( b.name, "beat", a.name, "2-1")
-			
-			del(pairings[val-1])
-
-		except ValueError:
-			print("Please enter a number between 1 and", len(pairings))
-
-		
+from swiss_input import input_pairing_results
 
 # Main Tournament Loop
 def run_tournament(player_list):
