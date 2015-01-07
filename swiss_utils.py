@@ -10,12 +10,13 @@ def create_player_list(filename):
 
 	with open(filename) as f:
 		content = f.readlines()
-		hidden_ranks = shuffle(list(range(len(content))))
+		hidden_ranks = list(range(len(content)))
+		shuffle(hidden_ranks)
 		for line in content:
 			players.append(Player(line.strip(), False, True, hidden_ranks.pop()))
 
 	# Add an extra bye player that is active dependent on whether or not it is originally needed
-	players.append( Player( "BYE", True, len(players) % 2 == 1  ) )
+	players.append(Player( "BYE", True, len(players) % 2 == 1, 0))
 
 	return players
 
