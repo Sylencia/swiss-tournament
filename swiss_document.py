@@ -1,4 +1,4 @@
-from pylatex import Document, Section, Subsection, Table
+from pylatex import Document, Section, Subsection, Table, Package
 from pylatex.utils import bold, escape_latex
 from swiss_utils import is_equal_rank_tiebreakers, is_equal_rank_no_tiebreakers, get_ranked_player_list
 
@@ -113,23 +113,42 @@ def add_previous_results(doc, player_list, num_rounds):
 						table.add_row(result_row)
 						table.add_hline()
 
-def add_elimination_bracket(doc, player_list):
-	with doc.create(Subsection('Finals Bracket', False)):
-				with doc.create(Table('|ccc|')) as table:
+def add_elimination_bracket(doc, finals_matches, winner):
+	with doc.create(Subsection('Bracket', False)):
+				with doc.create(Table('| c | c | c |')) as table:
 					table.add_hline()
-					table.add_row(("Semi-Finals", "Finals", "Winner"))
+					table.add_row(("Semi Finals", "Grand Finals", "Tournament Winner"))
 					table.add_hline()
-					table.add_row((player_list[0].name, "", ""))
-					table.add_row(("", player_list[0].name, ""))
-					table.add_row((player_list[1].name, "", ""))
-					table.add_row(("", "", player_list[0].name))
-					table.add_row((player_list[2].name, "", ""))
-					table.add_row(("", player_list[2].name, ""))
-					table.add_row((player_list[3].name, "", ""))
+					table.add_empty_row()
+					table.add_hline(1,1)
+					table.add_row((bold(finals_matches[0].name1), "", ""))
+					table.add_empty_row()
+					table.add_hline(2,2)
+					table.add_row((finals_matches[0].score, bold(finals_matches[2].name1), ""))
+					table.add_empty_row()
+					# table.add_hline(2,2)
+					table.add_row((bold(finals_matches[0].name2), "", ""))
+					table.add_hline(1,1)
+					# table.add_hline(3,3)
+					table.add_empty_row()
+					table.add_row(("", finals_matches[2].score, bold(winner)))
+					table.add_empty_row()
+					# table.add_hline(3,3)
+					table.add_hline(1,1)
+					table.add_row((bold(finals_matches[1].name1), "", ""))
+					# table.add_hline(1,2)
+					table.add_empty_row()
+					table.add_row((finals_matches[1].score, bold(finals_matches[2].name2), ""))
+					table.add_hline(2,2)
+					table.add_empty_row()
+					table.add_row((bold(finals_matches[1].name2), "", ""))
+					table.add_hline(1,1)
+					table.add_empty_row()
 					table.add_hline()
 
 def publish_round_pairing(r_num, player_list, pairings, num_rounds):
 	doc = Document("Round" + str(r_num + 1))
+	doc.packages.append(Package('geometry', options=['lmargin=3cm']))
 
 	with doc.create(Section("Round " + str(r_num + 1) + " of " + str(num_rounds), False)):
 		add_pairings(doc, pairings)
@@ -142,12 +161,21 @@ def publish_round_pairing(r_num, player_list, pairings, num_rounds):
 
 	doc.generate_pdf()
 
-def publish_final_standings(player_list, num_rounds):
-	doc = Document("Finals")
+def publish_end_of_swiss_standings(player_list, num_rounds):
+	doc = Document("EndOfSwiss")
+	doc.packages.append(Package('geometry', options=['lmargin=3cm']))
 
-	with doc.create(Section("Final Results", False)):
-		add_elimination_bracket(doc, player_list)
+	with doc.create(Section("End of Swiss Results", False)):
 		add_standings_full(doc, player_list, True)
 		add_previous_results(doc, player_list, num_rounds)
+
+	doc.generate_pdf()
+
+def publish_finals_document(finals_matches, winner = ""):
+	doc = Document("Finals")
+	doc.packages.append(Package('geometry', options=['lmargin=5cm']))
+
+	with doc.create(Section("Top 4", False)):
+		add_elimination_bracket(doc, finals_matches, winner)
 
 	doc.generate_pdf()

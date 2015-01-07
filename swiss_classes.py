@@ -52,3 +52,20 @@ class Player:
 
 		self.opp_match_win_percent = total_match_win_percent / max(1, num_opponents)
 		self.opp_game_win_percent = total_game_win_percent / max(1, num_opponents)
+
+class FinalsMatch:
+	def __init__(self, name1 = "", name2 = ""):
+		self.name1 = name1
+		self.name2 = name2
+		self.score = ""
+		self.played = False
+
+	def update_score(self, score1, score2):
+		self.score = str(score1) + " - " + str(score2)
+		played = True
+
+	def update_name(self, name, player):
+		if player == 1:
+			self.name1 = name
+		else:
+			self.name2 = name

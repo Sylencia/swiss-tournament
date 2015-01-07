@@ -1,5 +1,6 @@
 from random import shuffle
 from swiss_utils import get_ranked_player_list
+from swiss_classes import FinalsMatch
 
 # Used for first round pairing only
 # Shuffle list, then return a set containing every (n*2)th player vsing (n*2+1)th player
@@ -34,3 +35,9 @@ def score_based_pairings(player_list, previous):
 						return rec
 	
 	return pair_players(sp)
+
+# Finals random_pairings
+def create_finals_pairings(player_list):
+	sp = get_ranked_player_list(player_list)
+
+	return [FinalsMatch(sp[0].name, sp[3].name), FinalsMatch(sp[1].name, sp[2].name), FinalsMatch()]
