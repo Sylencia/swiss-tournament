@@ -1,4 +1,5 @@
-from random import choice, randint
+# for testing purposes only
+# from random import choice, randint
 
 def input_pairing_results( pairings ):
 	while not len(pairings) == 0:
@@ -84,29 +85,16 @@ def input_dropout_players( player_list ):
 			print( choice, "is not a valid name.")
 
 def input_finals_match_result( match ):
-	p1_score = 0
-	p2_score = 0
-
-	while p1_score < 3 and p2_score < 3:
 		print("\n")
-		print(match.name1, "vs", match.name2, ":", p1_score, "-", p2_score)
+		print(match.name1, "vs", match.name2, ":", match.score1, "-", match.score2)
 		print("Enter result: ")
 		result = input()
 		while result.lower() not in [match.name1.lower(), match.name2.lower()]:
 			result = input()
 
 		if result.lower() == match.name1.lower():
-			p1_score += 1
+			match.update_score(match.name1)
 
 		if result.lower() == match.name2.lower():
-			p2_score += 1
-
-	match.update_score(p1_score, p2_score)
-	
-	if p1_score >= 3:
-		print( match.name1, "won the match", str(p1_score), "-", str(p2_score))
-		return match.name1
-	else:
-		print( match.name2, "won the match", str(p2_score), "-", str(p1_score))
-		return match.name2
+			match.update_score(match.name2)
 

@@ -15,7 +15,7 @@ def add_pairings(doc, pairings):
 						table.add_row((bold(str(count)), a.name, "vs", b.name))
 					count += 1
 
-def add_standings_full(doc, player_list, cutoff=False):
+def add_standings_full(doc, player_list, cutoff = False, cutoff_num = 0):
 	sp = get_ranked_player_list(player_list)
 	rank = 1
 	previous_player = None
@@ -46,7 +46,7 @@ def add_standings_full(doc, player_list, cutoff=False):
 					table.add_row((rank, player.name, player.match_win, player.match_loss, escape_latex(tb1), escape_latex(tb2), escape_latex(tb3)))
 					previous_player = player
 
-				if cutoff and i == 3:
+				if cutoff and i == cutoff_num - 1:
 					table.add_hline()
 
 			table.add_hline()
@@ -94,7 +94,7 @@ def add_previous_results(doc, player_list, num_rounds):
 					table.add_row(title_list)
 					table.add_hline()
 
-					for p in player_list:
+					for p in sp:
 						if p.is_bye:
 							continue
 
@@ -113,38 +113,44 @@ def add_previous_results(doc, player_list, num_rounds):
 						table.add_row(result_row)
 						table.add_hline()
 
-def add_elimination_bracket(doc, finals_matches, winner):
-	with doc.create(Subsection('Bracket', False)):
-				with doc.create(Table('| c | c | c |')) as table:
-					table.add_hline()
-					table.add_row(("Semi Finals", "Grand Finals", "Tournament Winner"))
-					table.add_hline()
-					table.add_empty_row()
-					table.add_hline(1,1)
-					table.add_row((bold(finals_matches[0].name1), "", ""))
-					table.add_empty_row()
-					table.add_hline(2,2)
-					table.add_row((finals_matches[0].score, bold(finals_matches[2].name1), ""))
-					table.add_empty_row()
-					# table.add_hline(2,2)
-					table.add_row((bold(finals_matches[0].name2), "", ""))
-					table.add_hline(1,1)
-					# table.add_hline(3,3)
-					table.add_empty_row()
-					table.add_row(("", finals_matches[2].score, bold(winner)))
-					table.add_empty_row()
-					# table.add_hline(3,3)
-					table.add_hline(1,1)
-					table.add_row((bold(finals_matches[1].name1), "", ""))
-					# table.add_hline(1,2)
-					table.add_empty_row()
-					table.add_row((finals_matches[1].score, bold(finals_matches[2].name2), ""))
-					table.add_hline(2,2)
-					table.add_empty_row()
-					table.add_row((bold(finals_matches[1].name2), "", ""))
-					table.add_hline(1,1)
-					table.add_empty_row()
-					table.add_hline()
+def add_elimination_matches(doc, matches):
+	for match in matches:
+		with doc.create(Subsection('', False)):
+			with doc.create(Table('| c c c |')) as table:
+				table.add_hline()
+				table.add_row(("", bold(match.description), ""))
+				table.add_hline()
+				table.add_row((match.name1, "vs", match.name2))
+				table.add_row((bold(str(match.score1)), "", bold(str(match.score2))))
+				table.add_hline()
+				table.add_row(("", bold("Game Results"), ""))
+				table.add_hline()
+				for i in range(len(match.game_winners)):
+					table.add_row(("Game " + str(i+1), "", match.game_winners[i]))
+				table.add_hline()
+
+def add_final_ranks(doc, player_list):
+	# The list is from first eliminated to last eliminated
+	rank_list = player_list
+	rank_list.reverse()
+	rank = 1
+	top_cut = 1
+
+	with doc.create(Table('p {4cm} | c | c | p {4cm}')) as table:
+		table.add_hline(2,3)
+		for player in rank_list:
+			if rank == 1:
+				table.add_row(("", "Winner", player, ""))
+			elif rank == 2:
+				table.add_row(("", "Runner Up", player, ""))
+			else:
+				while rank > top_cut:
+					top_cut *= 2
+				table.add_row(("", "Top " + str(top_cut), player, ""))
+
+			table.add_hline(2,3)
+			rank += 1
+
 
 def publish_round_pairing(r_num, player_list, pairings, num_rounds):
 	doc = Document("Round" + str(r_num + 1))
@@ -161,21 +167,25 @@ def publish_round_pairing(r_num, player_list, pairings, num_rounds):
 
 	doc.generate_pdf()
 
-def publish_end_of_swiss_standings(player_list, num_rounds):
+def publish_end_of_swiss_standings(player_list, num_rounds, cutoff_players):
 	doc = Document("EndOfSwiss")
 	doc.packages.append(Package('geometry', options=['lmargin=3cm']))
 
 	with doc.create(Section("End of Swiss Results", False)):
-		add_standings_full(doc, player_list, True)
+		add_standings_full(doc, player_list, True, cutoff_players)
 		add_previous_results(doc, player_list, num_rounds)
 
 	doc.generate_pdf()
 
-def publish_finals_document(finals_matches, winner = ""):
+def publish_finals_document(finals_matches, players_in_rank_order = []):
 	doc = Document("Finals")
 	doc.packages.append(Package('geometry', options=['lmargin=5cm']))
 
-	with doc.create(Section("Top 4", False)):
-		add_elimination_bracket(doc, finals_matches, winner)
+	if players_in_rank_order:
+		with doc.create(Section("Finals Rankings", False)):
+			add_final_ranks(doc, players_in_rank_order)
+
+	with doc.create(Section("Finals Playoff Matches", False)):
+		add_elimination_matches(doc, finals_matches)
 
 	doc.generate_pdf()
